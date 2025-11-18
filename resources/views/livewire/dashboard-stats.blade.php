@@ -1,4 +1,4 @@
-<div wire:poll.10s="loadStats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div wire:poll.10s="loadStats" class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-6">
     <!-- Total Invested -->
     <div class="glass-effect p-6 rounded-xl card-hover relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
@@ -116,41 +116,47 @@
         </div>
     </div>
 
+    <div class="col-span-full  overflow-hidden">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Sponsor -->
+            <x-card class="glass-effect">
+                <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Sponsor</h3>
+                <p class="text-xl font-bold text-cyan-400">
+                    {{ auth()->user()->sponsor?->username ?? 'None' }}
+                </p>
+            </x-card>
+
+            <!-- Card 2: Link -->
+            <x-card x-data="{ link: '{{ url('/ref/' . auth()->user()->username) }}' }" class="glass-effect">
+                <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Your Link</h3>
+                
+                <!-- Code Field (Read Only) -->
+                <code id="referral-link-input" class="block w-full bg-gray-900 text-xs p-3 rounded-lg text-gray-200 break-all overflow-hidden mb-3">
+                    {{ url('/ref/' . auth()->user()->username) }}
+                </code>
+                
+                <!-- Copy btn -->
+                <button 
+                    @click="copyToClipboard(link, 'Referral link copied successfully!')"
+                    class="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-cyan-600 hover:bg-cyan-700 transition duration-150 ease-in-out shadow-md"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-2m-2 2h-4a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2z"></path></svg>
+                    <span>Copy Link</span>
+                </button>
+            </x-card>
+
+            <!-- Card 3: Total Comission -->
+            <x-card class="glass-effect">
+                <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Total Commission</h3>
+                <p class="text-2xl font-extrabold text-yellow-400">
+                    ${{ number_format($totalCommission, 2) }}
+                </p>
+            </x-card>
     
-    <!-- Card 1: Sponsor -->
-    <x-card class="glass-effect">
-        <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Sponsor</h3>
-        <p class="text-xl font-bold text-cyan-400">
-            {{ auth()->user()->sponsor?->username ?? 'None' }}
-        </p>
-    </x-card>
+        </div>
 
-    <!-- Card 2: Link -->
-    <x-card x-data="{ link: '{{ url('/ref/' . auth()->user()->username) }}' }" class="col-span-2 glass-effect">
-        <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Your Link</h3>
-        
-        <!-- Code Field (Read Only) -->
-        <code id="referral-link-input" class="block w-full bg-gray-900 text-xs p-3 rounded-lg text-gray-200 break-all overflow-hidden mb-3">
-            {{ url('/ref/' . auth()->user()->username) }}
-        </code>
-        
-        <!-- Copy btn -->
-        <button 
-            @click="copyToClipboard(link, 'Referral link copied successfully!')"
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-cyan-600 hover:bg-cyan-700 transition duration-150 ease-in-out shadow-md"
-        >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-2m-2 2h-4a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2z"></path></svg>
-            <span>Copy Link</span>
-        </button>
-    </x-card>
-
-    <!-- Card 3: Total Comission -->
-    <x-card class="glass-effect">
-        <h3 class="text-sm font-semibold uppercase text-gray-400 mb-2">Total Commission</h3>
-        <p class="text-2xl font-extrabold text-yellow-400">
-            ${{ number_format($totalCommission, 2) }}
-        </p>
-    </x-card>
+    </div>
     
 
     <!-- Performance Metrics (Full Width) -->

@@ -515,3 +515,28 @@
 [x-cloak] {
     display: none !important;
 }
+
+@keyframes pulse-success {
+  0% { background-color: rgba(74, 222, 128, 0.4); } /* Verde com opacidade */
+  50% { background-color: rgba(74, 222, 128, 0.0); }
+  100% { background-color: rgba(74, 222, 128, 0.0); }
+}
+
+@keyframes pulse-danger {
+  0% { background-color: rgba(248, 113, 113, 0.4); } /* Vermelho com opacidade */
+  50% { background-color: rgba(248, 113, 113, 0.0); }
+  100% { background-color: rgba(248, 113, 113, 0.0); }
+}
+
+/* Aplica a animação no elemento que contém o preço */
+.animate-pulse-success {
+    animation: pulse-success 1s ease-out;
+    padding: 2px 4px; /* Adiciona padding para o efeito ser visível */
+    border-radius: 4px;
+}
+
+.animate-pulse-danger {
+    animation: pulse-danger 1s ease-out;
+    padding: 2px 4px;
+    border-radius: 4px;
+}

@@ -38,8 +38,10 @@
         <div class="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-primary-900/20 pointer-events-none"></div>
         <div class="fixed inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.15) 1px, transparent 0); background-size: 40px 40px;"></div>
 
+         @livewire('crypto-ticker')
+
         <div class="h-screen flex overflow-hidden">
-            
+            <!-- Market Ticker Tape -->
             @include('layouts.navigation')
 
             <!-- Main Content Area -->
@@ -100,50 +102,7 @@
                     </div>
                 </header>
 
-                <!-- Market Ticker Tape -->
-                <div class="h-7 sm:h-8 bg-gray-900/50 border-t border-gray-800/30 overflow-hidden">
-                    <div class="flex items-center h-full ticker-tape">
-                        <div class="flex items-center space-x-4 sm:space-x-6 md:space-x-8 px-2 sm:px-4">
-                            <!-- BTC - sempre visível -->
-                            <div class="flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">BTC/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-success-400">$42,156.32</span>
-                                <span class="text-xs text-success-400">+2.5%</span>
-                            </div>
-                            <!-- ETH - sempre visível -->
-                            <div class="flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">ETH/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-success-400">$2,245.18</span>
-                                <span class="text-xs text-success-400">+3.2%</span>
-                            </div>
-                            <!-- BNB - visível a partir de sm -->
-                            <div class="hidden sm:flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">BNB/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-danger-400">$315.42</span>
-                                <span class="text-xs text-danger-400">-1.2%</span>
-                            </div>
-                            <!-- SOL - visível a partir de md -->
-                            <div class="hidden md:flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">SOL/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-success-400">$98.75</span>
-                                <span class="text-xs text-success-400">+5.8%</span>
-                            </div>
-                            <!-- XRP - visível a partir de lg -->
-                            <div class="hidden lg:flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">XRP/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-success-400">$0.5642</span>
-                                <span class="text-xs text-success-400">+1.8%</span>
-                            </div>
-                            <!-- Duplicados para scroll infinito (apenas desktop) -->
-                            <div class="hidden xl:flex items-center space-x-1 sm:space-x-2">
-                                <span class="text-xs text-gray-400 whitespace-nowrap">BTC/USDT</span>
-                                <span class="text-xs sm:text-sm font-semibold text-success-400">$42,156.32</span>
-                                <span class="text-xs text-success-400">+2.5%</span>
-                            </div>
-                            <!-- ... repita outros conforme necessário -->
-                        </div>
-                    </div>
-                </div>
+
                 <!-- Page Content -->
                 <main class="flex-1 overflow-y-auto bg-gray-900 p-8 custom-scrollbar">
 
