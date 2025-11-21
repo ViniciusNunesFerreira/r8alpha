@@ -27,7 +27,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Registro dos Observers
-        Investment::observe(InvestmentObserver::class);
         Profit::observe(ProfitObserver::class);
     }
 }

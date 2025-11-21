@@ -10,7 +10,8 @@ class Investment extends Model
     protected $fillable = [
         'user_id', 'investment_plan_id', 'amount',
         'current_balance', 'total_profit', 'status',
-        'started_at', 'expires_at',
+        'started_at', 'expires_at','payment_status', 
+        'payment_data', 'payment_method', 'last_profit_at'
     ];
     protected $casts = [
         'amount' => 'decimal:8',
@@ -18,6 +19,7 @@ class Investment extends Model
         'total_profit' => 'decimal:8',
         'started_at' => 'datetime',
         'expires_at' => 'datetime',
+        'last_profit_at' => 'datetime'
     ];
 
     public function user()

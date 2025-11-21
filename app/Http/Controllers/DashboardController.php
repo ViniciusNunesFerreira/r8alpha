@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -12,7 +13,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         
         // Carrega dados do usuário
-        $wallets = $user->wallets();
+        $wallets = $user->wallets;
         
         // Investimentos com planos
         $investments = $user->investments()
@@ -26,13 +27,18 @@ class DashboardController extends Controller
             ->orderByDesc('created_at')
             ->get();
         // Estatísticas
-        $stats = [
-            'total_invested' => $investments->sum('amount'),
-            'total_profit' => optional($wallets->where('type', 'investment')->first())->total_profit,
-            'active_bots' => $botInstances->where('is_active', true)->count(),
-            'total_trades' => $botInstances->sum('total_trades'),
-            'success_rate' => $this->calculateAverageSuccessRate($botInstances),
-        ];
+
+        $userId = $user->id;
+        
+        $stats =  [
+               'total_invested' => $investments->sum('amount'),
+                'total_profit' => optional($wallets->where('type', 'investment')->first())->total_profit,
+                'active_bots' => $botInstances->where('is_active', true)->count(),
+                'total_trades' => $botInstances->sum('total_trades'),
+                'success_rate' => $this->calculateAverageSuccessRate($botInstances),
+            ];
+        
+        
         return view('dashboard', compact(
             'user', 
             'wallets', 

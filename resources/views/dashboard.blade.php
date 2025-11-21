@@ -29,13 +29,8 @@
             </div>
         </div>
 
-
-
         <!-- Stats Cards -->
         @livewire('dashboard-stats')
-
-        
-
 
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -47,7 +42,6 @@
 
                 <!-- Profit Chart -->
                 @livewire('profit-chart')
-
 
             </div>
 
@@ -61,7 +55,7 @@
                     <h3 class="text-xl font-bold mb-4">Quick Actions</h3>
                     <div class="space-y-3">
                         <!-- Colocar route quando criado: route('investments.index') -->
-                        <a href="#" class="flex items-center justify-between p-4 bg-gradient-to-r from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 rounded-lg transition group">
+                        <a href="{{ route('investments.plans.index') }}" class="flex items-center justify-between p-4 bg-gradient-to-r from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 rounded-lg transition group">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +73,7 @@
                         </a>
 
                         <!-- Colocar route quando criado: route('wallet.index') -->
-                        <a href="#" class="flex items-center justify-between p-4 bg-gradient-to-r from-success/20 to-success/10 hover:from-success/30 hover:to-success/20 rounded-lg transition group">
+                        <a href="{{ route('deposit.index') }}" class="flex items-center justify-between p-4 bg-gradient-to-r from-success/20 to-success/10 hover:from-success/30 hover:to-success/20 rounded-lg transition group">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-lg bg-success flex items-center justify-center">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

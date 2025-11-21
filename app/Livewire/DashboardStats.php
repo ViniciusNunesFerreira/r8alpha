@@ -101,7 +101,7 @@ class DashboardStats extends Component
                 'profit_today' => $profitToday,
                 'average_success_rate' => $averageSuccessRate,
                 'best_bot_profit' => $bestBot ? $bestBot->total_profit : 0,
-                'wallet_balance' => auth()->user()->wallet->balance ?? 0,
+                'wallet_balance' => auth()->user()->depositWallet->balance ?? 0,
             ];
         });
     }

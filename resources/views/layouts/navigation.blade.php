@@ -27,8 +27,6 @@
             <span class="font-semibold text-sm sm:text-base truncate">Dashboard</span>
         </a>
 
-
-
         <!-- Trading Bots -->
         <a href="#" class=" flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,8 +41,10 @@
         </a>
 
         <!-- Investments -->
-        <a href="#" class=" flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ route('investments.plans.index') }}" 
+        class="{{ request()->routeIs('investments.*') ? 'bg-primary/20 text-primary' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} 
+        flex items-center space-x-3 px-4 py-3 rounded-lg transition group">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <span class="font-semibold">Investments</span>
@@ -78,7 +78,7 @@
     </nav>
 
     <!-- User Profile -->
-    <div class="border-t border-gray-800 p-3 sm:p-4">
+    <div class="border-t border-gray-800 p-3 sm:p-4 mb-4">
         <div class="flex items-center space-x-2 sm:space-x-3">
             <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-xs sm:text-sm status-online flex-shrink-0">
                 {{ substr(auth()->user()->name, 0, 1) }}

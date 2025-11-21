@@ -13,7 +13,7 @@
             <p class="text-sm text-gray-400 mt-1">Manage your automated trading bots</p>
         </div>
         <!--  route('bots.index')  -->
-        <a href="#" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-lg font-semibold transition">
+        <a href="{{ route('bots.index') }}" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-lg font-semibold transition">
             View All
         </a>
     </div>
@@ -182,7 +182,7 @@
             <h4 class="text-xl font-bold text-gray-400 mb-2">No Bots Found</h4>
             <p class="text-gray-500 mb-6">Create your first investment to start automated trading</p>
             <!--  route('investments.index')  -->
-            <a href="#" class="inline-flex items-center space-x-2 px-6 py-3 bg-primary hover:bg-primary/80 rounded-lg font-semibold transition">
+            <a href="{{ route('investments.plans.index') }}" class="inline-flex items-center space-x-2 px-6 py-3 bg-primary hover:bg-primary/80 rounded-lg font-semibold transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>

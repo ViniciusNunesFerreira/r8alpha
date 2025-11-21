@@ -41,7 +41,7 @@
                     <span></span>
                 </span>
             </div>
-            <p class="text-sm text-gray-400 mb-1">Current Balance</p>
+            <p class="text-sm text-gray-400 mb-1">Current Balance Invests</p>
             <p class="text-3xl font-bold text-white mb-2">
                 ${{ number_format($stats['current_balance'] ?? 0, 2) }}
             </p>
@@ -162,6 +162,20 @@
     <!-- Performance Metrics (Full Width) -->
     <div class="glass-effect p-6 rounded-xl col-span-full">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <!-- Wallet Balance -->
+            <div class="text-center">
+                <div class="mb-3">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold text-gray-300">Deposit Balance</p>
+                <p class="text-xs text-primary mt-1">${{ number_format($stats['wallet_balance'] ?? 0, 2) }}</p>
+            </div>
+
             <!-- Success Rate -->
             <div class="text-center">
                 <div class="mb-3">
@@ -197,29 +211,14 @@
                 <p class="text-xs text-gray-500 mt-1">All active bots</p>
             </div>
 
-            <!-- Wallet Balance -->
-            <div class="text-center">
-                <div class="mb-3">
-                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
-                    </div>
-                </div>
-                <p class="text-sm font-semibold text-gray-300">Wallet Balance</p>
-                <p class="text-xs text-primary mt-1">${{ number_format($stats['wallet_balance'] ?? 0, 2) }}</p>
-            </div>
+           
         </div>
     </div>
 </div>
 
 <script>
-    /**
-     * Adiciona um alerta de sucesso dinâmico à página, simulando o session('success').
-     * @param {string} message A mensagem de sucesso a ser exibida.
-     */
+    
     function showSuccessAlert(message) {
-        // Cria a estrutura do alerta baseada no seu app.blade.php
         const alertHtml = `
             <div id="dynamic-success-alert" class="fixed top-10 right-10 z-50 p-4 bg-success/10 border border-success/30 rounded-lg flex items-center justify-between shadow-xl animate-fade-in" style="min-width: 300px;">
                 <div class="flex items-center space-x-3">
@@ -236,22 +235,18 @@
             </div>
         `;
         
-        // Remove alertas anteriores para evitar poluição da tela
         const oldAlert = document.getElementById('dynamic-success-alert');
         if (oldAlert) {
             oldAlert.remove();
         }
 
-        // Adiciona o novo alerta ao corpo do documento
         document.body.insertAdjacentHTML('beforeend', alertHtml);
-
-        // Desaparece o alerta após 5 segundos
         setTimeout(() => {
             const currentAlert = document.getElementById('dynamic-success-alert');
             if (currentAlert) {
                 currentAlert.classList.remove('animate-fade-in');
                 currentAlert.classList.add('animate-fade-out');
-                setTimeout(() => currentAlert.remove(), 500); // Remove depois da animação
+                setTimeout(() => currentAlert.remove(), 500); 
             }
         }, 5000);
     }
@@ -277,8 +272,6 @@
     function fallbackCopyTextToClipboard(textToCopy, successMessage) {
         const textArea = document.createElement("textarea");
         textArea.value = textToCopy;
-        
-        // Estiliza para fora da tela
         textArea.style.position = "fixed";
         textArea.style.left = "-999999px";
         textArea.style.top = "-999999px";
@@ -291,7 +284,7 @@
             document.execCommand('copy');
             showSuccessAlert(successMessage);
         } catch (err) {
-            // Em caso de falha total
+           
             console.error('Failed to copy the text: ', err);
             alert('We were unable to copy the link. Try selecting and copying it manually.');
         } finally {

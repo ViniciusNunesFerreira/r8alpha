@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-
 @import 'crypto-components.css';
 @import 'responsive-fixes.css';
+@import 'table-responsive-fixes.css';
 
 @tailwind base;
 @tailwind components;
@@ -30,10 +30,23 @@
    BASE STYLES
    ============================================ */
 @layer base {
+    
+    * {
+        box-sizing: border-box;
+    }
+    
+    html {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+    }
         
     body {
         @apply bg-gray-900 text-gray-100 antialiased;
         font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
     }
     
     /* Scrollbar Styles */
@@ -517,21 +530,20 @@
 }
 
 @keyframes pulse-success {
-  0% { background-color: rgba(74, 222, 128, 0.4); } /* Verde com opacidade */
+  0% { background-color: rgba(74, 222, 128, 0.4); }
   50% { background-color: rgba(74, 222, 128, 0.0); }
   100% { background-color: rgba(74, 222, 128, 0.0); }
 }
 
 @keyframes pulse-danger {
-  0% { background-color: rgba(248, 113, 113, 0.4); } /* Vermelho com opacidade */
+  0% { background-color: rgba(248, 113, 113, 0.4); }
   50% { background-color: rgba(248, 113, 113, 0.0); }
   100% { background-color: rgba(248, 113, 113, 0.0); }
 }
 
-/* Aplica a animação no elemento que contém o preço */
 .animate-pulse-success {
     animation: pulse-success 1s ease-out;
-    padding: 2px 4px; /* Adiciona padding para o efeito ser visível */
+    padding: 2px 4px;
     border-radius: 4px;
 }
 

@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use App\Events\InvestmentUpdated;
 use App\Events\ProfitGenerated;
+use Illuminate\Support\Facades\Cache;
 
  class InvestmentService
  {
@@ -83,6 +84,8 @@ use App\Events\ProfitGenerated;
                 'description' => "Investment in {$plan->name} plan",
                 'status' => 'completed',
             ]);
+
+            Cache::forget("user_stats_{$investment->user_id}");
 
             broadcast(new InvestmentUpdated($investment))->toOthers();
 
