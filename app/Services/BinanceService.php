@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class BinanceService
 {
-
-    protected $baseUrl = 'https://api.binance.com';
+    // ALTERAÇÃO CRÍTICA:
+    // 'api.binance.com' bloqueia servidores de nuvem (AWS, DigitalOcean, etc).
+    // 'data-api.binance.vision' é o endpoint oficial para dados de mercado que aceita servidores.
+    protected $baseUrl = 'https://data-api.binance.vision'; 
+    
     protected $apiKey;
     protected $apiSecret;
 
@@ -16,7 +19,6 @@ class BinanceService
         $this->apiKey = config('services.binance.api_key');
         $this->apiSecret = config('services.binance.api_secret');
     }
-
 
      public function getTickerPrice(string $symbol)
     {
@@ -39,11 +41,9 @@ class BinanceService
         }
     }
 
-
     /**
      * Obtém o livro de ofertas (order book)
-     * 
-     * @param string $symbol Par de trading
+     * * @param string $symbol Par de trading
      * @param int $limit Quantidade de níveis (5, 10, 20, 50, 100, 500, 1000, 5000)
      * @return array|null Dados do order book ou null
      */
@@ -66,12 +66,10 @@ class BinanceService
         }
     }
 
-
      /**
      * Obtém preços de todos os pares disponíveis
      * Cache de 1 segundo para evitar rate limit
-     * 
-     * @return \Illuminate\Support\Collection Collection de preços
+     * * @return \Illuminate\Support\Collection Collection de preços
      */
     public function getAllTickers()
     {
@@ -93,14 +91,11 @@ class BinanceService
         });
     }
 
-
     /**
      * Obtém estatísticas de 24 horas de um símbolo
-     * 
-     * @param string $symbol Par de trading
+     * * @param string $symbol Par de trading
      * @return array|null Estatísticas ou null
      */
-
     public function get24hrStats(string $symbol)
     {
         try {
@@ -110,6 +105,10 @@ class BinanceService
             if ($response->successful()) {
                 return $response->json();
             }
+            
+            // Logar erro para debug se falhar no servidor
+            Log::warning("Falha ao buscar stats para $symbol: " . $response->status());
+            
             return null;
         } catch (\Exception $e) {
             Log::error('Binance 24hr Stats Exception', [
@@ -119,12 +118,10 @@ class BinanceService
         }
     }
 
-
      /**
      * Obtém informações completas da exchange
      * Cache de 1 hora (dados raramente mudam)
-     * 
-     * @return array|null Informações da exchange
+     * * @return array|null Informações da exchange
      */
     public function getExchangeInfo()
     {
@@ -146,11 +143,9 @@ class BinanceService
         });
     }
 
-
      /**
      * Obtém pares de trading disponíveis para uma moeda base
-     * 
-     * @param string $baseCurrency Moeda base (ex: BTC, ETH, USDT)
+     * * @param string $baseCurrency Moeda base (ex: BTC, ETH, USDT)
      * @return \Illuminate\Support\Collection Collection de pares
      */
     public function getTradingPairs(string $baseCurrency)
@@ -171,8 +166,7 @@ class BinanceService
        /**
      * Calcula taxa de trading
      * Taxa padrão da Binance: 0.1%
-     * 
-     * @param float $amount Valor da operação
+     * * @param float $amount Valor da operação
      * @param float $feeRate Taxa (padrão 0.1%)
      * @return float Valor da taxa
      */
@@ -183,8 +177,7 @@ class BinanceService
 
      /**
      * Obtém dados históricos de candlestick
-     * 
-     * @param string $symbol Par de trading
+     * * @param string $symbol Par de trading
      * @param string $interval Intervalo (1m, 5m, 15m, 1h, 4h, 1d, etc)
      * @param int $limit Quantidade de candles (máx: 1000)
      * @return array|null Dados históricos ou null
@@ -208,7 +201,4 @@ class BinanceService
             return null;
         }
     }
-
-
-
 }
