@@ -13,6 +13,7 @@ use App\Observers\ProfitObserver;
 
 use Illuminate\Support\Facades\View;
 use App\View\Composers\ActiveBotsComposer;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,5 +34,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Registro dos Observers
         Profit::observe(ProfitObserver::class);
+
+        if($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
