@@ -181,11 +181,11 @@
                                 <svg class="w-20 h-20 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
                                 </svg>
-                                <h3 class="text-xl font-bold text-gray-400 mb-2">Nenhum bot encontrado</h3>
-                                <p class="text-gray-500 mb-6">Crie seu primeiro investimento para começar</p>
+                                <h3 class="text-xl font-bold text-gray-400 mb-2">No bots found</h3>
+                                <p class="text-gray-500 mb-6">Make your first investment to get started.</p>
                                 <a href="{{ route('investments.plans.index') }}" 
                                    class="px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg font-semibold transition">
-                                    Criar Primeiro Bot
+                                    Create First Bot
                                 </a>
                             </div>
                         </td>
@@ -212,12 +212,12 @@
                                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                                         <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                                     </span>
-                                    <span class="text-xs font-semibold">Ativo</span>
+                                    <span class="text-xs font-semibold">Active</span>
                                 </span>
                             @else
                                 <span class="flex items-center space-x-1 text-gray-400">
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
-                                    <span class="text-xs font-semibold">Inativo</span>
+                                    <span class="text-xs font-semibold">Inactive</span>
                                 </span>
                             @endif
                         </div>
@@ -226,11 +226,11 @@
                     <!-- Stats Grid -->
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="bg-white/5 rounded-lg p-2">
-                            <p class="text-xs text-gray-400 mb-1">Investimento</p>
+                            <p class="text-xs text-gray-400 mb-1">Investiment</p>
                             <p class="font-semibold text-sm">${{ number_format($bot->investment->amount ?? 0, 2) }}</p>
                         </div>
                         <div class="bg-white/5 rounded-lg p-2">
-                            <p class="text-xs text-gray-400 mb-1">Lucro</p>
+                            <p class="text-xs text-gray-400 mb-1">Profit</p>
                             <p class="font-semibold text-sm text-success">${{ number_format($bot->total_profit ?? 0, 2) }}</p>
                         </div>
                         <div class="bg-white/5 rounded-lg p-2">
@@ -238,7 +238,7 @@
                             <p class="font-semibold text-sm">{{ number_format($bot->total_trades ?? 0) }}</p>
                         </div>
                         <div class="bg-white/5 rounded-lg p-2">
-                            <p class="text-xs text-gray-400 mb-1">Taxa Sucesso</p>
+                            <p class="text-xs text-gray-400 mb-1">Success Rate</p>
                             <p class="font-semibold text-sm">{{ number_format($bot->success_rate ?? 0, 1) }}%</p>
                         </div>
                     </div>
@@ -247,13 +247,13 @@
                     <div class="flex items-center space-x-2">
                         <a href="{{ route('bots.show', $bot) }}" 
                            class="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition text-center text-sm">
-                            Ver Detalhes
+                            View Details
                         </a>
                         <form action="{{ route('bots.toggle', $bot) }}" method="POST" class="flex-1">
                             @csrf
                             <button type="submit" 
                                     class="w-full px-4 py-2 rounded-lg font-semibold transition text-sm {{ $bot->is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-success hover:bg-green-600' }}">
-                                {{ $bot->is_active ? 'Pausar' : 'Ativar' }}
+                                {{ $bot->is_active ? 'Pause' : 'Activate' }}
                             </button>
                         </form>
                     </div>
@@ -269,11 +269,11 @@
                     <svg class="w-16 h-16 text-gray-600 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-400 mb-2">Nenhum bot encontrado</h3>
-                    <p class="text-sm text-gray-500 mb-4">Crie seu primeiro investimento</p>
+                    <h3 class="text-lg font-bold text-gray-400 mb-2">No bots found</h3>
+                    <p class="text-sm text-gray-500 mb-4">Create your first investment</p>
                     <a href="{{ route('investments.plans.index') }}" 
                        class="inline-block px-6 py-3 bg-primary hover:bg-primary-600 rounded-lg font-semibold transition text-sm">
-                        Criar Primeiro Bot
+                        Create First Bot
                     </a>
                 </div>
             @endforelse
