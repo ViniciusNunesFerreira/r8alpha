@@ -19,6 +19,7 @@ class EnsureUserIsAdmin
             return redirect('/login'); // Redireciona para o login se não estiver autenticado
         }
 
+        \Log::info('Usuário é admin: '. auth()->user()->is_admin);
         // 2. Verifica se o usuário é um administrador
         // Você deve adaptar esta lógica para o seu modelo de User.
         // Exemplo: Usando uma coluna 'is_admin'
