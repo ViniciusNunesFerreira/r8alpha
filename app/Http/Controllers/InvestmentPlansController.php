@@ -106,7 +106,7 @@ class InvestmentPlansController extends Controller
                     ->where('type', 'deposit')
                     ->first();
 
-                if (!$wallet || $wallet->balance < $amount) {
+                if (!$wallet || $wallet->totalAvailableBalance < $amount) {
                     throw new \Exception('Insufficient wallet balance.');
                 }
 
@@ -170,16 +170,21 @@ class InvestmentPlansController extends Controller
         $user = $investment->user;
         $investmentAmount = $investment->amount;
 
+        $is_sponsor = 0;
+        if($wallet->sponsored_balance > 0){
+             $is_sponsor = 1;
+        }
+
         // 1. Debita da carteira deposit
-        $wallet->decrement('balance', $investmentAmount);
+        $wallet->debitBalance($investmentAmount);
 
         // 2. Registra transação na carteira deposit
         $wallet->transactions()->create([
             'user_id' => $investment->user_id,
             'type' => 'investment',
             'amount' => $investmentAmount,
-            'balance_before' => $wallet->balance + $investmentAmount,
-            'balance_after' => $wallet->balance,
+            'balance_before' => $wallet->totalAvailableBalance + $investmentAmount,
+            'balance_after' => $wallet->totalAvailableBalance,
             'description' => "Investment in {$investment->investmentPlan->name}",
             'status' => 'completed',
         ]);
@@ -197,11 +202,11 @@ class InvestmentPlansController extends Controller
         
         $investmentWallet->increment('total_deposited', $investmentAmount);
 
-
         // 4. Atualiza investimento
         $investment->update([
             'payment_status' => 'paid',
             'status' => 'active',
+            'is_sponsored' => $is_sponsor,
             'current_balance' => $investment->amount,
             'started_at' => now(),
             'expires_at' => now()->addDays($investment->investmentPlan->duration_days),

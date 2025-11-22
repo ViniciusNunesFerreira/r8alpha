@@ -94,7 +94,7 @@
                                 <div class="min-w-0">
                                     <p class="text-xs text-gray-400 hidden sm:block">Balance</p>
                                     <p class="text-xs sm:text-sm font-bold truncate">
-                                        ${{ number_format(auth()->user()->depositWallet->balance ?? 0, 2) }}
+                                        ${{ number_format(auth()->user()->depositWallet->totalAvailableBalance ?? 0, 2) }}
                                     </p>
                                 </div>
                             </div>

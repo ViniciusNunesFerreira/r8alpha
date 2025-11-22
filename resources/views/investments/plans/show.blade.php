@@ -144,7 +144,7 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="text-xs text-gray-400">Available</p>
-                                        <p class="font-bold text-success">${{ number_format($wallet->balance ?? 0, 2) }}</p>
+                                        <p class="font-bold text-success">${{ number_format($wallet->totalAvailableBalance ?? 0, 2) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
                                     </svg>
                                     <div>
                                         <p class="font-semibold">Cryptocurrency</p>
-                                        <p class="text-xs text-gray-400">USDT (TRC20)</p>
+                                        <p class="text-xs text-gray-400">USDT (BEP20)</p>
                                     </div>
                                 </div>
                             </div>

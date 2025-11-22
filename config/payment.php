@@ -21,7 +21,7 @@ return [
     |
     */
     'deposit_limits' => [
-        'min_usd' => 10.00,  // Mínimo de $10 USD
+        'min_usd' => 10,  // Mínimo de $10 USD
         'max_usd' => 100000,   // Sem limite máximo
     ],
     

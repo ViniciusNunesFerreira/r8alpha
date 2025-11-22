@@ -43,12 +43,7 @@ class PaymentController extends Controller
                 if ($secondsSinceLastRequest < 30) { // 30 segundos entre requisições
                     $waitTime = 30 - $secondsSinceLastRequest;
                     
-                    Log::warning('Rate limit atingido para criação de pagamento', [
-                        'user_id' => $user->id,
-                        'wait_time' => $waitTime,
-                        'ip' => $request->ip(),
-                    ]);
-                    
+                                      
                     return back()->with('error', "Please wait {$waitTime} seconds before creating another payment.");
                 }
             }
@@ -75,11 +70,7 @@ class PaymentController extends Controller
                     ->first();
                 
                 if ($existingPayment) {
-                    Log::info('Redirecionando para pagamento pendente existente', [
-                        'user_id' => $user->id,
-                        'deposit_id' => $existingPayment->id,
-                    ]);
-                    
+                                       
                     return redirect()->route('payment.show', $existingPayment->transaction_id)
                         ->with('info', 'You already have a pending payment for this investment.');
                 }
@@ -99,10 +90,6 @@ class PaymentController extends Controller
                 ->count();
             
             if ($pendingPaymentsCount >= 3) {
-                Log::warning('Usuário atingiu limite de pagamentos pendentes', [
-                    'user_id' => $user->id,
-                    'pending_count' => $pendingPaymentsCount,
-                ]);
                 
                 return back()->with('error', 'You have too many pending payments. Please complete or cancel them before creating new ones.');
             }
@@ -167,13 +154,7 @@ class PaymentController extends Controller
 
             DB::commit();
 
-            Log::info('Pagamento criado com sucesso', [
-                'user_id' => $user->id,
-                'deposit_id' => $deposit->id,
-                'payment_type' => $paymentType,
-                'method' => $paymentMethod,
-            ]);
-
+           
             return redirect()->route('payment.show', $deposit->transaction_id)
                 ->with('success', $paymentType === 'deposit' 
                     ? 'Deposit created successfully!' 
