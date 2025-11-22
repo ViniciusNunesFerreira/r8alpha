@@ -15,10 +15,7 @@ class ReferralRegisterController extends Controller
 {
     public function show($username)
     {
-        \Log::info('Sponsor: '.$username);
         $sponsorUser = User::where('username', $username)->select(['username', 'name'])->firstOrFail();
-
-        \Log::debug((object) $sponsorUser);
         return view('auth.register', compact('sponsorUser'));
     }
 
