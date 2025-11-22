@@ -5,8 +5,10 @@ namespace App\Livewire;
 use App\Models\BotInstance;
 use App\Models\ArbitrageOpportunity;
 use App\Models\Trade;
+use App\Jobs\ScanArbitrageOpportunities;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class BotMonitor extends Component
 {
@@ -114,22 +116,47 @@ class BotMonitor extends Component
     public function toggleBot()
     {
         try {
+            $previousStatus = $this->bot->is_active;
             $this->bot->is_active = !$this->bot->is_active;
             $this->bot->save();
 
-            $message = $this->bot->is_active 
-                ? 'Bot ativado com sucesso!' 
-                : 'Bot pausado com sucesso!';
+            if ($this->bot->is_active) {
+                // Se ativou, dispara job para escanear oportunidades
+                ScanArbitrageOpportunities::dispatch($this->bot);
+                
+                Log::info('Bot activated via Livewire', [
+                    'bot_id' => $this->bot->id,
+                    'user_id' => $this->bot->user_id,
+                    'instance_id' => $this->bot->instance_id
+                ]);
 
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => $message
-            ]);
+                $this->dispatch('notify', [
+                    'type' => 'success',
+                    'message' => 'Bot ativado com sucesso! Começando a escanear oportunidades...'
+                ]);
+            } else {
+                Log::info('Bot deactivated via Livewire', [
+                    'bot_id' => $this->bot->id,
+                    'user_id' => $this->bot->user_id,
+                    'instance_id' => $this->bot->instance_id
+                ]);
+
+                $this->dispatch('notify', [
+                    'type' => 'success',
+                    'message' => 'Bot pausado com sucesso!'
+                ]);
+            }
 
             // Reload data after toggle
             $this->loadBotData();
 
         } catch (\Exception $e) {
+            Log::error('Error toggling bot status via Livewire', [
+                'bot_id' => $this->bot->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Erro ao alterar status do bot: ' . $e->getMessage()

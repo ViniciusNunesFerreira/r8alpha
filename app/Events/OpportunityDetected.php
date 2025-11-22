@@ -41,12 +41,16 @@ class OpportunityDetected
     {
         return [
             'opportunity_id' => $this->opportunity->id,
+            'id' => $this->opportunity->id,
             'bot_instance_id' => $this->opportunity->bot_instance_id,
-            'profit_percentage' => $this->opportunity->profit_percentage,
-            'estimated_profit' => $this->opportunity->estimated_profit,
             'base_currency' => $this->opportunity->base_currency,
             'intermediate_currency' => $this->opportunity->intermediate_currency,
             'quote_currency' => $this->opportunity->quote_currency,
+            'profit_percentage' => (float) $this->opportunity->profit_percentage,
+            'estimated_profit' => (float) $this->opportunity->estimated_profit,
+            'prices' => $this->opportunity->prices,
+            'status' => $this->opportunity->status,
+            'detected_at' => $this->opportunity->detected_at->toIso8601String(),
         ];
     }
 }

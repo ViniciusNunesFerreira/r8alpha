@@ -11,6 +11,9 @@ use App\Models\Profit;
 use App\Observers\InvestmentObserver;
 use App\Observers\ProfitObserver;
 
+use Illuminate\Support\Facades\View;
+use App\View\Composers\ActiveBotsComposer;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -26,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('layouts.navigation', ActiveBotsComposer::class);
+
         // Registro dos Observers
         Profit::observe(ProfitObserver::class);
     }

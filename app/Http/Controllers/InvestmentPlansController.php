@@ -15,7 +15,6 @@ class InvestmentPlansController extends Controller
 
     public function __construct(InvestmentService $investmentService)
     {
-        
         $this->investmentService = $investmentService;
     }
 
@@ -24,7 +23,6 @@ class InvestmentPlansController extends Controller
      */
     public function index()
     {
-
         $plans = InvestmentPlan::where('is_active', true)
             ->orderBy('min_amount')
             ->get();
@@ -70,6 +68,7 @@ class InvestmentPlansController extends Controller
         $request->validate([
             'amount' => [
                 'required',
+                'numeric',
                 'min:' . $plan->min_amount,
                 'max:' . $plan->max_amount,
             ],
@@ -79,7 +78,7 @@ class InvestmentPlansController extends Controller
         DB::beginTransaction();
         
         try {
-            $amount = $request->amount;
+            $amount = floatval($request->amount);
             $paymentMethod = $request->payment_method;
 
             // Verifica disponibilidade do plano
@@ -87,35 +86,30 @@ class InvestmentPlansController extends Controller
                 throw new \Exception('This plan is not available.');
             }
 
-            // Se pagamento via carteira, verifica saldo
-            if ($paymentMethod === 'wallet') {
-                $wallet = auth()->user()->wallets()
-                    ->where('type', 'deposit')
-                    ->first();
-
-                    \Log::info('entrei na wallet');
-
-                if (!$wallet || $wallet->balance < $amount) {
-                    throw new \Exception('Insufficient wallet balance.');
-                }
-            }
-
             // Cria o investimento com status pending
             $investment = Investment::create([
                 'user_id' => auth()->user()->id,
                 'investment_plan_id' => $plan->id,
                 'amount' => $amount,
-                'current_balance' => 0, // Será atualizado após confirmação
+                'current_balance' => 0,
                 'total_profit' => 0,
-                'status' => 'pending', // pending, active, completed, cancelled
+                'status' => 'pending',
                 'payment_method' => $paymentMethod,
-                'payment_status' => 'pending', // pending, paid, failed
-                'started_at' => null, // Será definido após confirmação
+                'payment_status' => 'pending',
+                'started_at' => null,
                 'expires_at' => null,
             ]);
 
             // Se pagamento via carteira, processa imediatamente
             if ($paymentMethod === 'wallet') {
+                $wallet = auth()->user()->wallets()
+                    ->where('type', 'deposit')
+                    ->first();
+
+                if (!$wallet || $wallet->balance < $amount) {
+                    throw new \Exception('Insufficient wallet balance.');
+                }
+
                 $this->processWalletPayment($investment, $wallet);
                 
                 DB::commit();
@@ -125,14 +119,12 @@ class InvestmentPlansController extends Controller
                     ->with('success', 'Investment created successfully! Your bot is now active.');
             }
 
-            // Se pagamento externo, gera informações de pagamento
-            $paymentData = $this->generatePaymentData($investment, $paymentMethod);
-
             DB::commit();
 
+            // Se pagamento externo (PIX ou Crypto), redireciona para seleção de método
             return redirect()
                 ->route('investments.payment', $investment)
-                ->with('success', 'Investment created! Complete the payment to activate your bot.');
+                ->with('success', 'Investment created! Choose your payment method.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -144,25 +136,69 @@ class InvestmentPlansController extends Controller
     }
 
     /**
+     * Página de escolha de método de pagamento
+     */
+    public function payment(Investment $investment)
+    {
+        // Verifica se é do usuário
+        if ($investment->user_id !== auth()->user()->id) {
+            abort(403);
+        }
+
+        // Se já foi pago, redireciona
+        if ($investment->payment_status === 'paid') {
+            return redirect()
+                ->route('dashboard')
+                ->with('info', 'This investment has already been paid.');
+        }
+
+        // Se foi cancelado, redireciona
+        if ($investment->status === 'cancelled') {
+            return redirect()
+                ->route('investments.plans.index')
+                ->with('error', 'This investment was cancelled.');
+        }
+
+        return view('investments.payment', compact('investment'));
+    }
+
+    /**
      * Processa pagamento via carteira
      */
     protected function processWalletPayment(Investment $investment, Wallet $wallet)
     {
-        // Debita da carteira
-        $wallet->decrement('balance', $investment->amount);
+        $user = $investment->user;
+        $investmentAmount = $investment->amount;
 
-        // Registra transação
+        // 1. Debita da carteira deposit
+        $wallet->decrement('balance', $investmentAmount);
+
+        // 2. Registra transação na carteira deposit
         $wallet->transactions()->create([
             'user_id' => $investment->user_id,
             'type' => 'investment',
-            'amount' => $investment->amount,
-            'balance_before' => $wallet->balance + $investment->amount,
+            'amount' => $investmentAmount,
+            'balance_before' => $wallet->balance + $investmentAmount,
             'balance_after' => $wallet->balance,
             'description' => "Investment in {$investment->investmentPlan->name}",
             'status' => 'completed',
         ]);
 
-        // Atualiza investimento
+        // 3. Incrementa total_deposited na carteira investment
+        $investmentWallet = $user->wallets()->firstOrCreate(
+            ['type' => 'investment'],
+            [
+                'balance' => 0,
+                'total_deposited' => 0,
+                'total_withdrawn' => 0,
+                'total_profit' => 0
+            ]
+        );
+        
+        $investmentWallet->increment('total_deposited', $investmentAmount);
+
+
+        // 4. Atualiza investimento
         $investment->update([
             'payment_status' => 'paid',
             'status' => 'active',
@@ -171,11 +207,10 @@ class InvestmentPlansController extends Controller
             'expires_at' => now()->addDays($investment->investmentPlan->duration_days),
         ]);
 
-        // Cria bot instance
+        // 5. Cria bot instance
         $this->createBotInstance($investment);
 
-        // Atualiza first_investment_at do usuário se for primeiro
-        $user = $investment->user;
+        // 6. Atualiza first_investment_at do usuário se for primeiro
         if (!$user->first_investment_at) {
             $user->update(['first_investment_at' => now()]);
         }
@@ -204,129 +239,5 @@ class InvestmentPlansController extends Controller
         \App\Jobs\ScanArbitrageOpportunities::dispatch($botInstance);
 
         return $botInstance;
-    }
-
-    /**
-     * Gera dados de pagamento para métodos externos
-     */
-    protected function generatePaymentData(Investment $investment, string $method)
-    {
-        // Aqui você integraria com gateway de pagamento real
-        // Por enquanto, retorna estrutura base
-        
-        $paymentData = [
-            'investment_id' => $investment->id,
-            'amount' => $investment->amount,
-            'method' => $method,
-            'expires_at' => now()->addMinutes(30),
-        ];
-
-        if ($method === 'pix') {
-            // Integração PIX - exemplo
-            $paymentData['pix_code'] = $this->generatePixCode($investment);
-            $paymentData['qr_code'] = $this->generatePixQRCode($investment);
-        }
-
-        if ($method === 'crypto') {
-            // Integração Crypto - exemplo
-            $paymentData['wallet_address'] = config('payments.crypto.wallet_address');
-            $paymentData['network'] = 'TRC20'; // ou ERC20, BEP20, etc
-        }
-
-        // Salva dados de pagamento
-        $investment->update([
-            'payment_data' => $paymentData,
-        ]);
-
-        return $paymentData;
-    }
-
-    /**
-     * Página de pagamento
-     */
-    public function payment(Investment $investment)
-    {
-        // Verifica se é do usuário
-        if ($investment->user_id !== auth()->user()->id) {
-            abort(403);
-        }
-
-        // Se já foi pago, redireciona
-        if ($investment->payment_status === 'paid') {
-            return redirect()
-                ->route('investments.show', $investment)
-                ->with('info', 'This investment has already been paid.');
-        }
-
-        return view('investments.payment', compact('investment'));
-    }
-
-    /**
-     * Webhook para confirmação de pagamento
-     * Este método seria chamado pelo gateway de pagamento
-     */
-    public function confirmPayment(Request $request, Investment $investment)
-    {
-        // Validação do webhook (verificar assinatura, etc)
-        // ...
-
-        DB::beginTransaction();
-        
-        try {
-            if ($investment->payment_status !== 'pending') {
-                throw new \Exception('Payment already processed.');
-            }
-
-            // Atualiza status do pagamento
-            $investment->update([
-                'payment_status' => 'paid',
-                'status' => 'active',
-                'current_balance' => $investment->amount,
-                'started_at' => now(),
-                'expires_at' => now()->addDays($investment->investmentPlan->duration_days),
-            ]);
-
-            // Cria bot instance
-            $this->createBotInstance($investment);
-
-            // Atualiza first_investment_at do usuário
-            $user = $investment->user;
-            if (!$user->first_investment_at) {
-                $user->update(['first_investment_at' => now()]);
-            }
-
-            DB::commit();
-
-            // Notifica usuário
-            // event(new PaymentConfirmed($investment));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment confirmed successfully.',
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
-
-    /**
-     * Helpers para PIX (exemplo - adaptar conforme gateway)
-     */
-    protected function generatePixCode(Investment $investment)
-    {
-        // Gerar código PIX real via gateway
-        return 'PIX_' . strtoupper(substr(md5($investment->id . time()), 0, 32));
-    }
-
-    protected function generatePixQRCode(Investment $investment)
-    {
-        // Gerar QR Code real via gateway
-        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
     }
 }

@@ -8,7 +8,7 @@
 <div class="space-y-6">
     
     <!-- Header com Saldo -->
-    <div class="glass-effect p-4 sm:p-6 rounded-xl">
+    <div class="glass-effect p-4 sm:p-6 rounded-xl mb-4">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
                 <h2 class="text-xl sm:text-2xl font-bold mb-2">Available Investment Plans</h2>
@@ -34,17 +34,11 @@
     </div>
 
     <!-- Grid de Planos -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
         @forelse($plans as $plan)
-        <div class="glass-effect rounded-xl overflow-hidden card-hover border border-white/10 hover:border-primary/30 transition-all duration-300 
-            {{ $loop->index === 1 ? 'lg:scale-105 border-primary/50' : '' }}">
+        <div class="glass-effect rounded-xl overflow-hidden card-hover border border-white/10 hover:border-primary/30 transition-all duration-300 ">
             
-            <!-- Badge "Most Popular" -->
-            @if($loop->index === 1)
-            <div class="bg-gradient-primary px-4 py-2 text-center">
-                <p class="text-white font-bold text-sm">⭐ MOST POPULAR</p>
-            </div>
-            @endif
+
 
             <div class="p-6">
                 <!-- Header do Plano -->
@@ -149,10 +143,7 @@
 
                 <!-- CTA Button -->
                 <a href="{{ route('investments.plans.show', $plan) }}" 
-                   class="block w-full py-3 px-6 text-center font-bold rounded-lg transition-all duration-300 
-                   {{ $loop->index === 1 
-                      ? 'bg-gradient-primary text-white hover:shadow-glow' 
-                      : 'bg-white/10 text-white hover:bg-white/20' }}">
+                   class="block w-full py-3 px-6 text-center font-bold rounded-lg transition-all duration-300  bg-white/10 text-white hover:bg-white/20">
                     Get Started
                     <svg class="w-5 h-5 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>

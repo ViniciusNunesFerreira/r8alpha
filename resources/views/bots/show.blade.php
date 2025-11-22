@@ -83,7 +83,7 @@
     </div>
 
     
-    <livewire:bot-monitor :botInstanceId="$bot->id" />
+    <livewire:bot-monitor :botId="$bot->id" />
 
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

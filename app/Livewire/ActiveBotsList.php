@@ -25,7 +25,7 @@ class ActiveBotsList extends Component
     public function loadBots()
     {
         $query = BotInstance::with(['investment.investmentPlan', 'user'])
-            ->where('user_id', auth()->id());
+            ->where('user_id', auth()->user()->id);
 
         // Apply filters
         if ($this->filter === 'active') {
@@ -47,49 +47,34 @@ class ActiveBotsList extends Component
                 break;
         }
 
-        $this->bots = $query->get()->map(function ($bot) {
-            return [
-                'id' => $bot->id,
-                'instance_id' => $bot->instance_id,
-                'is_active' => $bot->is_active,
-                'total_trades' => $bot->total_trades,
-                'successful_trades' => $bot->successful_trades,
-                'total_profit' => $bot->total_profit,
-                'success_rate' => $bot->success_rate,
-                'last_trade_at' => $bot->last_trade_at,
-                'investment' => [
-                    'amount' => $bot->investment->amount,
-                    'current_balance' => $bot->investment->current_balance,
-                    'plan_name' => $bot->investment->investmentPlan->name,
-                ],
-                'config' => $bot->config,
-            ];
-        })->toArray();
+        // Keep as collection of objects for route compatibility
+        $this->bots = $query->get();
     }
 
     public function toggleBot($botId)
     {
         $bot = BotInstance::findOrFail($botId);
         
-        if ($bot->user_id !== auth()->id()) {
-            $this->emit('notification', [
-                'type' => 'error',
-                'message' => 'Unauthorized action.'
-            ]);
+        if ($bot->user_id !== auth()->user()->id) {
+            $this->dispatch('notification', 
+                type: 'error',
+                message: 'Unauthorized action.'
+            );
             return;
         }
 
-        $bot->update(['is_active' => !$bot->is_active]);
+        $newStatus = !$bot->is_active;
+        $bot->update(['is_active' => $newStatus]);
         
         $this->loadBots();
         
-        $this->emit('notification', [
-            'type' => 'success',
-            'message' => $bot->is_active ? 'Bot activated successfully!' : 'Bot deactivated.'
-        ]);
+        $this->dispatch('notification',
+            type: 'success',
+            message: $newStatus ? 'Bot activated successfully!' : 'Bot deactivated.'
+        );
 
-        // Ativar Broadcast event
-       // broadcast(new \App\Events\BotStatusChanged($bot))->toOthers();
+        // Broadcast event
+        broadcast(new \App\Events\BotStatusChanged($bot))->toOthers();
     }
 
     public function setFilter($filter)

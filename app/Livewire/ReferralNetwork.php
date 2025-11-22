@@ -70,7 +70,7 @@ class ReferralNetwork extends Component
                     'name' => $user->name,
                     'username' => $user->username,
                     'first_investment_at' => $user->first_investment_at?->format('Y-m-d H:i:s'),
-                    'total_invested' => $user->investments->sum('amount'),
+                    'total_invested' => $user->investments->where('status', 'active')->sum('amount'),
                     'has_active_investment' => $user->investments->where('status', 'active')->isNotEmpty(),
                     'active_bots_count' => $botCounts->get($user->id, 0),
                 ]

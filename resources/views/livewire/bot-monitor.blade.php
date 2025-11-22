@@ -1,5 +1,5 @@
 <div>
-    {{-- Header Stats Cards --}}
+    
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {{-- Bot Status --}}
         <div class="glass-effect p-4 rounded-lg">
@@ -26,11 +26,11 @@
             </div>
         </div>
 
-        {{-- Total Profit --}}
+        
         <div class="glass-effect p-4 rounded-lg">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-400 mb-1">Lucro Total</p>
+                    <p class="text-sm text-gray-400 mb-1">Total Profit</p>
                     <p class="text-lg font-bold text-success">${{ number_format($stats['total_profit'], 2) }}</p>
                 </div>
                 <div class="p-3 rounded-lg bg-success/10">
@@ -45,7 +45,7 @@
         <div class="glass-effect p-4 rounded-lg">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-400 mb-1">Taxa de Sucesso</p>
+                    <p class="text-sm text-gray-400 mb-1">Success Rate</p>
                     <p class="text-lg font-bold">{{ number_format($stats['success_rate'], 1) }}%</p>
                 </div>
                 <div class="p-3 rounded-lg bg-secondary/10">
@@ -71,11 +71,11 @@
             </div>
         </div>
 
-        {{-- Opportunities Today --}}
+       
         <div class="glass-effect p-4 rounded-lg">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-400 mb-1">Oportunidades Hoje</p>
+                    <p class="text-sm text-gray-400 mb-1">Opportunities Today</p>
                     <p class="text-lg font-bold">{{ number_format($stats['opportunities_today']) }}</p>
                 </div>
                 <div class="p-3 rounded-lg bg-warning/10">
@@ -88,7 +88,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Left Column - Live Monitor --}}
+        
         <div class="lg:col-span-2 space-y-6">
             {{-- Performance Chart --}}
             <div class="glass-effect p-6 rounded-lg" wire:poll.10s="loadBotData">
@@ -97,7 +97,7 @@
                         <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
-                        <span>Desempenho (24h)</span>
+                        <span>Performance (24h)</span>
                     </h3>
                     <button 
                         wire:click="refreshMonitor"
@@ -115,28 +115,28 @@
 
                 <div class="mt-4 grid grid-cols-2 gap-4">
                     <div class="p-3 bg-white/5 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">Lucro Médio/Trade</p>
+                        <p class="text-sm text-gray-400 mb-1">Average Profit/Trade</p>
                         <p class="text-lg font-bold text-success">${{ number_format($stats['avg_profit_per_trade'], 2) }}</p>
                     </div>
                     <div class="p-3 bg-white/5 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">Última Operação</p>
+                        <p class="text-sm text-gray-400 mb-1">Last Operation</p>
                         <p class="text-lg font-bold">{{ $bot->last_trade_at ? $bot->last_trade_at->diffForHumans() : 'N/A' }}</p>
                     </div>
                 </div>
             </div>
 
-            {{-- Live Opportunities --}}
+           
             <div class="glass-effect p-6 rounded-lg">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold flex items-center space-x-2">
                         <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
-                        <span>Oportunidades de Arbitragem</span>
+                        <span>Live Opportunities</span>
                     </h3>
                     <div class="flex items-center space-x-2">
                         <span class="px-3 py-1 bg-success/20 text-success text-sm rounded-full font-semibold">
-                            {{ $this->activeOpportunities }} Ativas
+                            {{ $this->activeOpportunities }} Actives
                         </span>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                                     </span>
                                     @if($opportunity->status === 'executed')
                                         <span class="px-2 py-1 bg-success/10 text-success text-xs rounded-full">
-                                            ✓ Executada
+                                            ✓ Executed
                                         </span>
                                     @endif
                                 </div>
@@ -161,7 +161,7 @@
                             </div>
                             
                             <div class="mb-3">
-                                <p class="text-sm font-semibold mb-2">Rota de Arbitragem:</p>
+                                <p class="text-sm font-semibold mb-2">Arbitration Route:</p>
                                 <div class="flex items-center space-x-2">
                                     <span class="px-3 py-1 bg-primary/20 text-primary rounded-lg font-semibold">
                                         {{ $opportunity->base_currency }}
@@ -193,7 +193,7 @@
                             @endif
 
                             <div class="flex justify-between items-center pt-3 border-t border-white/10">
-                                <span class="text-sm text-gray-400">Lucro Estimado:</span>
+                                <span class="text-sm text-gray-400">Estimated Profit:</span>
                                 <span class="text-lg font-bold text-success">
                                     ${{ number_format($opportunity->estimated_profit, 2) }}
                                 </span>
@@ -206,15 +206,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400">Aguardando oportunidades de arbitragem...</p>
-                            <p class="text-sm text-gray-500 mt-2">O bot está monitorando o mercado continuamente</p>
+                            <p class="text-gray-400">Awaiting arbitration opportunities....</p>
+                            <p class="text-sm text-gray-500 mt-2">The bot is continuously monitoring the market.</p>
                         </div>
                     @endforelse
                 </div>
             </div>
         </div>
 
-        {{-- Right Column - Trades & Controls --}}
+        
         <div class="space-y-6">
             {{-- Bot Controls --}}
             <div class="glass-effect p-6 rounded-lg">
@@ -222,17 +222,17 @@
                     <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
                     </svg>
-                    <span>Controles do Bot</span>
+                    <span>Bot Controls</span>
                 </h3>
 
                 <div class="space-y-4">
                     <div class="p-4 bg-white/5 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">ID da Instância</p>
+                        <p class="text-sm text-gray-400 mb-1">Instance ID</p>
                         <p class="text-sm font-mono">{{ $bot->instance_id }}</p>
                     </div>
 
                     <div class="p-4 bg-white/5 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">Investimento</p>
+                        <p class="text-sm text-gray-400 mb-1">Investiment</p>
                         <p class="text-lg font-bold">${{ number_format($bot->investment->amount ?? 0, 2) }}</p>
                     </div>
 
@@ -259,11 +259,11 @@
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </span>
-                        <span>{{ $bot->is_active ? 'Pausar Bot' : 'Ativar Bot' }}</span>
+                        <span>{{ $bot->is_active ? 'Pause Bot' : 'Active Bot' }}</span>
                     </button>
 
                     <p class="text-xs text-center text-gray-400">
-                        Última atualização: {{ now()->format('H:i:s') }}
+                        Last updated: {{ now()->format('H:i:s') }}
                     </p>
                 </div>
             </div>
@@ -274,7 +274,7 @@
                     <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
-                    <span>Trades Recentes</span>
+                    <span>Recent Trades</span>
                 </h3>
 
                 <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
@@ -314,16 +314,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400">Nenhum trade executado ainda</p>
+                            <p class="text-gray-400">No trades executed yet</p>
                         </div>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-@push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('livewire:init', function () {
@@ -342,7 +341,7 @@
                 data: {
                     labels: @json($performanceData['labels'] ?? []),
                     datasets: [{
-                        label: 'Lucro Acumulado ($)',
+                        label: 'Accumulated Profit ($)',
                         data: @json($performanceData['data'] ?? []),
                         borderColor: 'rgb(16, 185, 129)',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -376,7 +375,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Lucro: $' + context.parsed.y.toFixed(2);
+                                    return 'Profit: $' + context.parsed.y.toFixed(2);
                                 }
                             }
                         }
@@ -446,7 +445,6 @@
         });
     });
 </script>
-@endpush
 
 <style>
     @keyframes pulse-slow {
@@ -488,3 +486,5 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 </style>
+
+</div>

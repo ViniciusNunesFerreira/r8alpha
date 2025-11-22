@@ -19,10 +19,10 @@ class InvestmentPlansSeeder extends Seeder
             [
                 'name' => 'Starter Plan',
                 'description' => 'Perfect for beginners entering the crypto arbitrage world. Start small and learn the ropes.',
-                'min_amount' => 1.00,
+                'min_amount' => 10.00,
                 'max_amount' => 99.99,
                 'daily_return_min' => 2.0,
-                'daily_return_max' => 3.0,
+                'daily_return_max' => 10.0,
                 'duration_days' => 45,
                 'is_active' => true,
                 'is_capital_back' => false, 

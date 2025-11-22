@@ -78,11 +78,6 @@ class StartCashPixService
                 'expires_at' => $expiresAt,
             ]);
 
-            Log::info('Cobrança PIX criada com sucesso', [
-                'deposit_id' => $deposit->id,
-                'txid' => $result->id,
-                'amount_brl' => $amountBrl,
-            ]);
 
             return [
                 'success' => true,

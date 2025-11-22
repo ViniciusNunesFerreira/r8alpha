@@ -5,31 +5,26 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ReferralRegisterController;
 use App\Http\Controllers\DashboardController;
 
-
 use App\Http\Controllers\BotController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ReferralNetworkController;
 use App\Http\Controllers\InvestmentPlansController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\DepositStatusController;
-
+use App\Http\Controllers\PaymentController;
 
 use App\Models\Investment;
-
-
 
 Route::get('/', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
 })->name('home');
-
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard do Investidor
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-     // Robôs de Trading
+    // Robôs de Trading
     Route::prefix('bots')->name('bots.')->group(function () {
         Route::get('/', [BotController::class, 'index'])
             ->name('index');
@@ -43,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('export');
     });
 
+    // Investment Plans
     Route::prefix('investments/plans')->name('investments.plans.')->group(function () {
         Route::get('/', [InvestmentPlansController::class, 'index'])
             ->name('index');
@@ -52,49 +48,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('subscribe');
     });
 
-    // Payment
+    // Investment Payment (escolha de método)
     Route::get('/investments/{investment}/payment', [InvestmentPlansController::class, 'payment'])
         ->name('investments.payment');
-    
-    // Check payment status (AJAX)
-    Route::get('/investments/{investment}/check-payment', function($investment) {
-        $investment = Investment::findOrFail($investment);
-        return response()->json([
-            'status' => $investment->payment_status
-        ]);
-    })->name('investments.check-payment');
 
-
-    //Deposits
+    // Deposits (Página inicial de depósitos)
     Route::prefix('deposit')->name('deposit.')->group(function () {
-
-        // Página principal de depósitos
         Route::get('/', [DepositController::class, 'index'])->name('index');
-        // Criar novo depósito
-        Route::post('/', [DepositController::class, 'create'])->name('create');
-        // Ver detalhes de um depósito
-        Route::get('/{transactionId}', [DepositController::class, 'show'])->name('show');
         
-        
-        // Cancelar depósito
-        Route::post('/{transactionId}/cancel', [DepositController::class, 'cancel'])
-            ->name('cancel');
-
-        /**
-         * Endpoint Long Polling
-         * Aguarda até 50 segundos por uma mudança de status
-         * Reduz significativamente o número de requisições comparado ao polling tradicional
-         * Recomendado para produção com muitos usuários
-         */
+        // Endpoint Long Polling para verificação de status
         Route::get('/{transaction_id}/check-status-long', [DepositStatusController::class, 'checkStatusLongPolling'])
             ->name('check-status-long');
-
     });
 
+    // ============================================
+    // SISTEMA UNIFICADO DE PAGAMENTOS
+    // ============================================
+    Route::prefix('payment')->name('payment.')->group(function () {
+        // Criar pagamento (PIX ou Crypto) - RATE LIMITED
+        Route::post('/create', [PaymentController::class, 'create'])
+            ->middleware('throttle:10,1') // Máximo 10 requisições por minuto
+            ->name('create');
+        
+        // Visualizar pagamento - unificado para ambos
+        Route::get('/{transactionId}', [PaymentController::class, 'show'])
+            ->name('show');
+        
+        // Cancelar pagamento - RATE LIMITED
+        Route::post('/{transactionId}/cancel', [PaymentController::class, 'cancel'])
+            ->middleware('throttle:5,1') // Máximo 5 cancelamentos por minuto
+            ->name('cancel');
+    });
 
-    Route::get('referral-network', [ReferralNetworkController::class, 'index'])->name('referral.network');
-
-
+    // Referral Network
+    Route::get('referral-network', [ReferralNetworkController::class, 'index'])
+        ->name('referral.network');
 });
 
 Route::middleware('auth')->group(function () {
@@ -103,10 +91,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // Rota de indicação pública: /ref/username
 Route::get('/ref/{username}', [ReferralRegisterController::class, 'show'])->name('register.ref');
 
-
+// ============================================
+// WEBHOOKS (Sem autenticação)
+// ============================================
+Route::prefix('webhooks')->name('webhooks.')->group(function () {
+    // Webhook PIX (StartCash)
+    Route::post('/pix', [DepositController::class, 'webhookPix'])
+        ->name('pix');
+    
+    // Webhook Crypto (NOWPayments)
+    Route::post('/nowpayments', [DepositController::class, 'webhookNowPayments'])
+        ->name('nowpayments');
+});
 
 require __DIR__.'/auth.php';

@@ -28,14 +28,22 @@
         </a>
 
         <!-- Trading Bots -->
-        <a href="#" class=" flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
+        <a href="{{ route('bots.index') }}" class=" {{ request()->routeIs('bots.*') ? 'bg-primary/20 text-primary' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} 
+        flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
             </svg>
             <span class="font-semibold">Trading Bots</span>
             
-            <span class="ml-auto px-2 py-1 text-xs rounded-full bg-success/20 text-success">
-                0
+           
+            <span class="ml-auto px-2 py-1 text-xs rounded-full 
+                @if(isset($activeBotsCount) && $activeBotsCount > 0)
+                    bg-success/20 text-success
+                @else
+                    bg-gray-700 text-gray-400
+                @endif
+            ">
+                {{ $activeBotsCount ?? 0 }}
             </span>
             
         </a>
@@ -69,7 +77,7 @@
         <div class="border-t border-gray-800 my-4"></div>
 
         <!-- Support -->
-        <a href="#" class=" flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
+        <a href="https://chat.whatsapp.com/FgrnQYcPohr8tflTWenFV3?mode=hqrt3" class=" flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition group touch-manipulation">
             <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>

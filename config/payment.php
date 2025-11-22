@@ -21,7 +21,7 @@ return [
     |
     */
     'deposit_limits' => [
-        'min_usd' => 1.00,  // Mínimo de $10 USD
+        'min_usd' => 10.00,  // Mínimo de $10 USD
         'max_usd' => 100000,   // Sem limite máximo
     ],
     
@@ -34,7 +34,7 @@ return [
     | 1 USD = 5.00 BRL
     |
     */
-    'usd_to_brl_rate' => 1.00,
+    'usd_to_brl_rate' => 5.00,
     
     /*
     |--------------------------------------------------------------------------

@@ -2,9 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Investment;
-use App\Models\Transaction;
-use App\Models\Trade;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -12,22 +9,20 @@ use Carbon\Carbon;
 class ProfitChart extends Component
 {
     public $chartData = [];
-    public $period = 'week'; // week, month, year
-    public $chartType = 'profit'; // profit, trades, performance
-    public $hasData = false; // <-- Nova propriedade para controle da exibição
+    public $period = '7d'; // 24h, 7d, 30d
 
-    protected $listeners = [
-        'refreshStats' => '$refresh',
-    ];
 
     public function mount()
-    {
-        // 1. Obter o ID do usuário
+    {      
         $userId = auth()->user()->id;
-        
-        // 2. Definir os listeners dinamicamente, usando {$userId} para interpolação
-        $this->listeners["echo-private:user.{$userId},ProfitGenerated"] = 'handleNewProfit';
-        
+        $this->listeners["echo-private:user.{$userId},TradeExecuted"] = 'refreshChart';
+        $this->loadChartData();
+
+    }
+
+    public function setPeriod($period)
+    {
+        $this->period = $period;
         $this->loadChartData();
     }
 
@@ -36,185 +31,134 @@ class ProfitChart extends Component
         $userId = auth()->user()->id;
         
         switch ($this->period) {
-            case 'week':
-                $this->chartData = $this->getWeeklyData($userId);
+            case '24h':
+                $data = $this->get24HoursData($userId);
                 break;
-            case 'month':
-                $this->chartData = $this->getMonthlyData($userId);
+            case '30d':
+                $data = $this->get30DaysData($userId);
                 break;
-            case 'year':
-                $this->chartData = $this->getYearlyData($userId);
+            case '7d':
+            default:
+                $data = $this->get7DaysData($userId);
                 break;
         }
 
-        // LÓGICA: Verifica se o primeiro dataset (Profit) tem dados significativos
-        $data = collect($this->chartData['datasets'][0]['data'] ?? []);
-        // Considera que há dados se houverem pontos e a soma total do lucro for maior que zero
-        $this->hasData = $data->count() > 0 && $data->sum() > 0;
+        $this->chartData = $data;
     }
 
-    protected function getWeeklyData($userId)
+    protected function get24HoursData($userId)
     {
+        $trades = DB::table('trades')
+            ->join('bot_instances', 'trades.bot_instance_id', '=', 'bot_instances.id')
+            ->where('bot_instances.user_id', $userId)
+            ->where('trades.created_at', '>=', now()->subHours(24))
+            ->where('trades.status', 'completed')
+            ->select(
+                DB::raw('HOUR(trades.created_at) as hour'),
+                DB::raw('SUM(trades.profit) as total_profit'),
+                DB::raw('COUNT(*) as trade_count')
+            )
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get();
+
         $labels = [];
-        $profitData = [];
-        $tradesData = [];
-        
-        // Últimos 7 dias
+        $data = [];
+        $cumulativeProfit = 0;
+
+        for ($i = 0; $i < 24; $i++) {
+            $hour = now()->subHours(23 - $i)->format('H:00');
+            $labels[] = $hour;
+            
+            $hourData = $trades->firstWhere('hour', now()->subHours(23 - $i)->format('H'));
+            $profit = $hourData ? (float) $hourData->total_profit : 0;
+            $cumulativeProfit += $profit;
+            
+            $data[] = round($cumulativeProfit, 2);
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
+        ];
+    }
+
+    protected function get7DaysData($userId)
+    {
+        $trades = DB::table('trades')
+            ->join('bot_instances', 'trades.bot_instance_id', '=', 'bot_instances.id')
+            ->where('bot_instances.user_id', $userId)
+            ->where('trades.created_at', '>=', now()->subDays(7))
+            ->where('trades.status', 'completed')
+            ->select(
+                DB::raw('DATE(trades.created_at) as date'),
+                DB::raw('SUM(trades.profit) as total_profit')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $labels = [];
+        $data = [];
+        $cumulativeProfit = 0;
+
         for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
+            $date = now()->subDays($i);
             $labels[] = $date->format('D');
             
-            // Lucro diário
-            $profit = Transaction::where('user_id', $userId)
-                ->where('type', 'profit')
-                ->whereDate('created_at', $date)
-                ->sum('amount');
-            $profitData[] = (float) $profit;
+            $dayData = $trades->firstWhere('date', $date->format('Y-m-d'));
+            $profit = $dayData ? (float) $dayData->total_profit : 0;
+            $cumulativeProfit += $profit;
             
-            // Trades diários
-            $trades = Trade::whereHas('botInstance', function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->whereDate('created_at', $date)
-            ->count();
-            $tradesData[] = $trades;
+            $data[] = round($cumulativeProfit, 2);
         }
-        
+
         return [
             'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Daily Profit',
-                    'data' => $profitData,
-                    'borderColor' => 'rgb(16, 185, 129)',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => true,
-                ],
-                [
-                    'label' => 'Daily Trades',
-                    'data' => $tradesData,
-                    'borderColor' => 'rgb(99, 102, 241)',
-                    'backgroundColor' => 'rgba(99, 102, 241, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => false,
-                    'yAxisID' => 'y1',
-                ]
-            ]
+            'data' => $data,
         ];
     }
 
-    protected function getMonthlyData($userId)
+    protected function get30DaysData($userId)
     {
+        $trades = DB::table('trades')
+            ->join('bot_instances', 'trades.bot_instance_id', '=', 'bot_instances.id')
+            ->where('bot_instances.user_id', $userId)
+            ->where('trades.created_at', '>=', now()->subDays(30))
+            ->where('trades.status', 'completed')
+            ->select(
+                DB::raw('DATE(trades.created_at) as date'),
+                DB::raw('SUM(trades.profit) as total_profit')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         $labels = [];
-        $profitData = [];
-        $tradesData = [];
-        
-        // Últimos 30 dias
+        $data = [];
+        $cumulativeProfit = 0;
+
         for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $labels[] = $date->format('M d');
+            $date = now()->subDays($i);
+            $labels[] = $date->format('d/m');
             
-            $profit = Transaction::where('user_id', $userId)
-                ->where('type', 'profit')
-                ->whereDate('created_at', $date)
-                ->sum('amount');
-            $profitData[] = (float) $profit;
+            $dayData = $trades->firstWhere('date', $date->format('Y-m-d'));
+            $profit = $dayData ? (float) $dayData->total_profit : 0;
+            $cumulativeProfit += $profit;
             
-            $trades = Trade::whereHas('botInstance', function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->whereDate('created_at', $date)
-            ->count();
-            $tradesData[] = $trades;
+            $data[] = round($cumulativeProfit, 2);
         }
-        
+
         return [
             'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Daily Profit',
-                    'data' => $profitData,
-                    'borderColor' => 'rgb(16, 185, 129)',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => true,
-                ],
-                [
-                    'label' => 'Daily Trades',
-                    'data' => $tradesData,
-                    'borderColor' => 'rgb(99, 102, 241)',
-                    'backgroundColor' => 'rgba(99, 102, 241, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => false,
-                    'yAxisID' => 'y1',
-                ]
-            ]
+            'data' => $data,
         ];
     }
 
-    protected function getYearlyData($userId)
-    {
-        $labels = [];
-        $profitData = [];
-        $tradesData = [];
-        
-        // Últimos 12 meses
-        for ($i = 11; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $labels[] = $date->format('M Y');
-            
-            $profit = Transaction::where('user_id', $userId)
-                ->where('type', 'profit')
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->sum('amount');
-            $profitData[] = (float) $profit;
-            
-            $trades = Trade::whereHas('botInstance', function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
-            ->count();
-            $tradesData[] = $trades;
-        }
-        
-        return [
-            'labels' => $labels,
-            'datasets' => [
-                [
-                    'label' => 'Monthly Profit',
-                    'data' => $profitData,
-                    'borderColor' => 'rgb(16, 185, 129)',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => true,
-                ],
-                [
-                    'label' => 'Monthly Trades',
-                    'data' => $tradesData,
-                    'borderColor' => 'rgb(99, 102, 241)',
-                    'backgroundColor' => 'rgba(99, 102, 241, 0.1)',
-                    'tension' => 0.4,
-                    'fill' => false,
-                    'yAxisID' => 'y1',
-                ]
-            ]
-        ];
-    }
-
-    public function setPeriod($period)
-    {
-        $this->period = $period;
-        $this->loadChartData();
-        $this->emit('chartUpdated');
-    }
-
-    public function handleNewProfit($data)
+    public function refreshChart()
     {
         $this->loadChartData();
-        $this->emit('chartUpdated');
+        $this->dispatch('refreshChart');
     }
 
     public function render()
