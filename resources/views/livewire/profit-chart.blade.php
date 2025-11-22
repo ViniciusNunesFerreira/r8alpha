@@ -5,9 +5,9 @@
                 <svg class="w-5 h-5 sm:w-6 sm:h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
-                <span>Evolução de Lucros</span>
+                <span>Profit Evolution</span>
             </h3>
-            <p class="text-xs sm:text-sm text-gray-400 mt-1">Acumulado no período</p>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1">Accumulated the period</p>
         </div>
 
         <!-- Period Selector -->
@@ -20,12 +20,12 @@
             <button 
                 wire:click="setPeriod('7d')"
                 class="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition touch-manipulation {{ $period === '7d' ? 'bg-primary text-white' : 'text-gray-400 hover:text-white' }}">
-                7 dias
+                7 days
             </button>
             <button 
                 wire:click="setPeriod('30d')"
                 class="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition touch-manipulation {{ $period === '30d' ? 'bg-primary text-white' : 'text-gray-400 hover:text-white' }}">
-                30 dias
+                30 days
             </button>
         </div>
     </div>
@@ -46,7 +46,7 @@
     <!-- Summary Stats -->
     <div class="mt-4 sm:mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <div class="p-3 sm:p-4 bg-white/5 rounded-lg">
-            <p class="text-xs text-gray-400 mb-1">Lucro no Período</p>
+            <p class="text-xs text-gray-400 mb-1">Profit in the Period</p>
             @if(count($chartData['data'] ?? []) > 0)
                 <p class="text-base sm:text-lg font-bold text-success">
                     ${{ number_format(end($chartData['data']), 2) }}
@@ -57,7 +57,7 @@
         </div>
 
         <div class="p-3 sm:p-4 bg-white/5 rounded-lg">
-            <p class="text-xs text-gray-400 mb-1">Média Diária</p>
+            <p class="text-xs text-gray-400 mb-1">Daily Average</p>
             @if(count($chartData['data'] ?? []) > 0)
                 @php
                     $days = $period === '24h' ? 1 : ($period === '7d' ? 7 : 30);
@@ -70,7 +70,7 @@
         </div>
 
         <div class="p-3 sm:p-4 bg-white/5 rounded-lg col-span-2 sm:col-span-1">
-            <p class="text-xs text-gray-400 mb-1">Tendência</p>
+            <p class="text-xs text-gray-400 mb-1">Trend</p>
             @if(count($chartData['data'] ?? []) > 1)
                 @php
                     $firstValue = $chartData['data'][0];
@@ -82,17 +82,17 @@
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                         </svg>
-                        <span class="text-base sm:text-lg font-bold text-success">Subindo</span>
+                        <span class="text-base sm:text-lg font-bold text-success">Up</span>
                     @elseif($trend === 'down')
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                         </svg>
-                        <span class="text-base sm:text-lg font-bold text-danger">Caindo</span>
+                        <span class="text-base sm:text-lg font-bold text-danger">Falling</span>
                     @else
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/>
                         </svg>
-                        <span class="text-base sm:text-lg font-bold text-gray-400">Estável</span>
+                        <span class="text-base sm:text-lg font-bold text-gray-400">Stable</span>
                     @endif
                 </div>
             @else
@@ -122,7 +122,7 @@
             data: {
                 labels: chartData.labels || [],
                 datasets: [{
-                    label: 'Lucro Acumulado',
+                    label: 'Accumulated Profit',
                     data: chartData.data || [],
                     borderColor: 'rgb(16, 185, 129)',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -156,7 +156,7 @@
                         displayColors: false,
                         callbacks: {
                             label: function(context) {
-                                return 'Lucro: $' + context.parsed.y.toFixed(2);
+                                return 'Profit: $' + context.parsed.y.toFixed(2);
                             }
                         }
                     }
