@@ -87,8 +87,9 @@ class UserResource extends Resource
                         Forms\Components\Select::make('type')
                             ->label('Tipo')
                             ->options([
-                                'user' => 'Usuário',
+                                'client' => 'Usuário',
                                 'admin' => 'Administrador',
+                                'sponsorship' => 'Patrocinado'
                             ])
                             ->default('user')
                             ->required(),
