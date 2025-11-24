@@ -14,7 +14,7 @@ use App\Events\TradeExecuted;
  {
 
     protected $binanceService;
-    protected $minProfitPercentage = 0.5; // Mínimo 0.5% de lucro
+    protected $minProfitPercentage = 0.1; // Mínimo 0.5% de lucro
     protected $tradingFee = 0.001; // 0.1% por trade
 
     public function __construct(BinanceService $binanceService)
