@@ -164,7 +164,8 @@ class UserResource extends Resource
                     ->label('Tipo')
                     ->colors([
                         'primary' => 'admin',
-                        'secondary' => 'user',
+                        'secondary' => 'client',
+                        'secondary' => 'sponsorship',
                     ]),
                 
                 Tables\Columns\TextColumn::make('created_at')
