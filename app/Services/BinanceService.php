@@ -10,7 +10,7 @@ class BinanceService
     // ALTERAÇÃO CRÍTICA:
     // 'api.binance.com' bloqueia servidores de nuvem (AWS, DigitalOcean, etc).
     // 'data-api.binance.vision' é o endpoint oficial para dados de mercado que aceita servidores.
-    protected $baseUrl = 'https://api.binance.com'; 
+    protected $baseUrl = 'data-api.binance.vision'; 
     
     protected $apiKey;
     protected $apiSecret;
