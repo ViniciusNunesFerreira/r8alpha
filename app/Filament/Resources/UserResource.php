@@ -186,8 +186,9 @@ class UserResource extends Resource
                 Tables\Filters\SelectFilter::make('type')
                     ->label('Tipo')
                     ->options([
-                        'user' => 'Usuário',
+                        'client' => 'Usuário',
                         'admin' => 'Administrador',
+                        'sponsorship' => 'Patrocinado'
                     ]),
                 
                 Tables\Filters\Filter::make('with_investments')
