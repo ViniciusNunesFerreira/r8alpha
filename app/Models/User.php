@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -142,6 +144,37 @@ class User extends Authenticatable implements FilamentUser
         
         // Caso contrário, faz a query
         return $this->botInstances()->where('is_active', true)->count();
+    }
+
+
+    public function directReferrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    /**
+     * Helper: Calcula o volume total investido pelos indicados diretos (Para regra do Nível 2).
+     */
+    public function getDirectNetworkVolumeAttribute(): float
+    {
+        // Soma o amount de todos os investimentos ativos dos indicados diretos
+        return $this->directReferrals()
+            ->join('investments', 'users.id', '=', 'investments.user_id')
+            ->where('investments.status', 'active')
+            ->sum('investments.amount');
+    }
+
+    /**
+     * Helper: Conta quantos indicados diretos estão ativos (Para regras dos Níveis 4 e 5).
+     * Considera ativo quem tem pelo menos um investimento 'active'.
+     */
+    public function getActiveDirectsCountAttribute(): int
+    {
+        return $this->directReferrals()
+            ->whereHas('investments', function($query) {
+                $query->where('status', 'active');
+            })
+            ->count();
     }
 
     

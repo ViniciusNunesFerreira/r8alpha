@@ -10,7 +10,7 @@ class BinanceService
     // ALTERAÇÃO CRÍTICA:
     // 'api.binance.com' bloqueia servidores de nuvem (AWS, DigitalOcean, etc).
     // 'data-api.binance.vision' é o endpoint oficial para dados de mercado que aceita servidores.
-    protected $baseUrl = 'https://data-api.binance.vision'; 
+    protected $baseUrl = 'https://api.binance.com'; 
     
     protected $apiKey;
     protected $apiSecret;
@@ -131,7 +131,16 @@ class BinanceService
             try {
                 $response = Http::get("{$this->baseUrl}/api/v3/exchangeInfo");
                 if ($response->successful()) {
-                    return $response->json();
+                    $data = $response->json();
+
+                    return [
+                        'timezone' => $data['timezone'] ?? 'UTC',
+                        'serverTime' => $data['serverTime'] ?? time(),
+                        'rateLimits' => $data['rateLimits'] ?? [],
+                        'symbols' => $data['symbols'] ?? [] 
+                    ];
+
+                    //return $response->json();
                 }
                 return null;
             } catch (\Exception $e) {

@@ -16,9 +16,9 @@ class Kernel extends ConsoleKernel
     {
         // Scan for arbitrage opportunities every minute
         $schedule->command('arbitrage:scan')->everyMinute();
-        
         // Process daily profits at midnight
         $schedule->command('profits:process')->hourly();
+
     }
 
     protected function commands()

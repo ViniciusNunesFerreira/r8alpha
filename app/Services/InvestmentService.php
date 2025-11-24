@@ -6,13 +6,25 @@ use App\Models\User;
 use App\Models\InvestmentPlan;
 use App\Models\BotInstance;
 use App\Models\Transaction;
+use App\Models\Profit;
 use Illuminate\Support\Facades\DB;
 use App\Events\InvestmentUpdated;
 use App\Events\ProfitGenerated;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+
+
 
  class InvestmentService
  {
+
+     protected $commissionService;
+
+    public function __construct(CommissionService $commissionService)
+    {
+        $this->commissionService = $commissionService;
+    }
 
      /**
      * Cria um novo investimento
@@ -98,113 +110,169 @@ use Illuminate\Support\Facades\Cache;
     }
 
 
+
     /**
-     * Calcula lucro diário de um investimento
-     * 
-     * O lucro é aleatório entre o mínimo e máximo do plano
-     * para simular variação natural do mercado
-     * 
-     * @param Investment $investment
-     * @return float Valor do lucro diário
+     * Calcula o valor exato do lucro para o dia.
+     * Implementa a regra: "Obrigatoriamente 100% até o fim".
      */
-    public function calculateDailyProfit(Investment $investment)
+    public function calculateDailyProfitAmount(Investment $investment): float
     {
         $plan = $investment->investmentPlan;
+        $now = Carbon::now();
+        $expiresAt = Carbon::parse($investment->expires_at);
         
-        // Gera percentual aleatório entre min e max
+        // Meta final: 100% do valor investido (ou seja, o lucro total deve ser igual ao amount)
+        $targetTotalProfit = $investment->amount; 
+        
+        // Lucro já acumulado
+        $currentTotalProfit = $investment->total_profit;
+
+        // Se já atingiu o teto, retorna 0
+        if ($currentTotalProfit >= $targetTotalProfit) {
+            return 0.0;
+        }
+
+        // Verifica se é o último dia (ou se já passou da data mas ainda não pagou tudo)
+        $isLastDay = $now->copy()->addDay()->greaterThanOrEqualTo($expiresAt);
+        
+        if ($isLastDay) {
+            // No último dia, pagamos a diferença exata para completar 100%
+            $remainingToPay = $targetTotalProfit - $currentTotalProfit;
+            return max(0, $remainingToPay);
+        }
+
+        // Cálculo Randômico Padrão
         $profitPercentage = rand(
             $plan->daily_return_min * 100, 
             $plan->daily_return_max * 100
         ) / 100;
-        // Calcula sobre o valor inicial do investimento
-        return ($investment->amount * $profitPercentage) / 100;
+
+        $calculatedProfit = ($investment->amount * $profitPercentage) / 100;
+
+        // Proteção: Nunca pagar mais que o restante para atingir 100%
+        $remainingCap = $targetTotalProfit - $currentTotalProfit;
+        
+        return min($calculatedProfit, $remainingCap);
     }
 
 
-    /**
-     * Processa lucros diários de todos os investimentos ativos
-     * 
-     * Executado diariamente via Cron às 00:00
-     * 
-     * @return array Estatísticas do processamento
+     /**
+     * Processa os lucros diários (Engine Principal)
      */
     public function processDailyProfits()
     {
         $investments = Investment::where('status', 'active')
-            ->where('expires_at', '>', now())
+            ->where('started_at', '<=', now()->subDay()) // Só começa 24h depois
+            ->where('expires_at', '>', now()) // Ainda não expirou
+            ->where(function ($query) {
+                    $query->where('last_profit_at', '<=', now()->subDay()) 
+                        ->orWhereNull('last_profit_at');           
+                })
             ->get();
+
+        \Log::info('Buscando os investimentos para rentabilizar, total:'.$investments->count());
+
         $stats = [
             'total_processed' => 0,
             'total_profit_distributed' => 0,
             'errors' => 0,
         ];
+
         foreach ($investments as $investment) {
+            
+            // Verificação de segurança para não rodar 2x no mesmo dia
+            if ($investment->last_profit_at && Carbon::parse($investment->last_profit_at)->isToday()) {
+                continue;
+            }
+
             try {
-                $profit = $this->calculateDailyProfit($investment);
-                
-                DB::transaction(function () use ($investment, $profit) {
-                    // Atualiza investimento
-                    $investment->increment('current_balance', $profit);
-                    $investment->increment('total_profit', $profit);
+                DB::beginTransaction();
 
-                    broadcast(new ProfitGenerated( $investment->user_id, $profit, $investment->id))->toOthers();
+                // 1. Calcula o Lucro Bruto do dia
+                $grossProfit = $this->calculateDailyProfitAmount($investment);
 
-                    // Atualiza carteira do usuário
-                    $wallet = $investment->user->wallet;
-                    $wallet->increment('balance', $profit);
-                    $wallet->increment('total_profit', $profit);
-                    // Registra transação
-                    Transaction::create([
+                if ($grossProfit > 0) {
+                    
+                    // 2. Aplica a Regra dos 20% (Retenção para Nível 1)
+                    $referralShare = $grossProfit * 0.20; // 20% vai para o sponsor direto
+                    $userShare = $grossProfit * 0.80;     // 80% vai para o usuário
+
+                    // 3. Atualiza o Investimento (Registra o lucro BRUTO no histórico do investimento para controle de teto)
+                    $investment->increment('total_profit', $grossProfit);
+                    $investment->increment('current_balance', $grossProfit); // Ou apenas userShare se o saldo for sacável
+                    $investment->update(['last_profit_at' => now()]);
+
+                    // 4. Paga a parte do Usuário (80%)
+                    $userWallet = $investment->user->wallets()->firstOrCreate(['type' => 'investment']); // Sugiro separar em carteira de lucro
+                    $balanceBefore = $userWallet->balance;
+                    $userWallet->increment('balance', $userShare);
+                    $userWallet->increment('total_profit', $userShare);
+
+                    // Cria registro na tabela profits (importante para relatórios e triggers se houver)
+                    $profitRecord = Profit::create([
                         'user_id' => $investment->user_id,
-                        'wallet_id' => $wallet->id,
-                        'type' => 'profit',
-                        'amount' => $profit,
-                        'balance_before' => $wallet->balance - $profit,
-                        'balance_after' => $wallet->balance,
-                        'description' => "Daily profit from investment #{$investment->id}",
-                        'status' => 'completed',
+                        'investment_id' => $investment->id,
+                        'amount' => $grossProfit, // Registra o bruto para fins contábeis
+                        'date' => now(),
                     ]);
-                });
+
+                    // Transação do usuário
+                    $userWallet->transactions()->create([
+                        'user_id' => $investment->user_id,
+                        'type' => 'profit',
+                        'amount' => $userShare,
+                        'description' => "Yield (80%) Inv #{$investment->id} - 20% Residual Bonus",
+                        'balance_after' => $userWallet->balance,
+                        'balance_before' => $balanceBefore
+                    ]);
+
+                    // 5. Distribui Bônus Residual
+                    // Passamos o $grossProfit porque as porcentagens dos niveis 2+ (5%, 3%, 1%) geralmente são baseadas no lucro total, não no líquido.
+                    // O CommissionService vai lidar com o destino dos 20% ($referralShare) e calcular os extras.
+                    $this->commissionService->processResiduals($investment->user, $grossProfit, $investment, $referralShare);
+
+                    // Eventos
+                    event(new ProfitGenerated($investment->user_id, $userShare, $investment->id));
+                } else {
+                    // Se lucro for 0 (já atingiu teto), marcamos o dia
+                    $investment->update(['last_profit_at' => now()]);
+                }
+
+                DB::commit();
+                
                 $stats['total_processed']++;
-                $stats['total_profit_distributed'] += $profit;
+                $stats['total_profit_distributed'] += $grossProfit;
+
             } catch (\Exception $e) {
-                Log::error('Error processing daily profit', [
-                    'investment_id' => $investment->id,
-                    'error' => $e->getMessage()
-                ]);
+                DB::rollBack();
+                Log::error("Erro processando inv #{$investment->id}: " . $e->getMessage());
                 $stats['errors']++;
             }
         }
+
         return $stats;
     }
 
+
      /**
-     * Finaliza investimentos expirados
-     * 
-     * @return int Quantidade de investimentos finalizados
+     * Finaliza investimentos expirados ou que atingiram 100%
      */
     public function finalizeExpiredInvestments()
     {
-        $expired = Investment::where('status', 'active')
-            ->where('expires_at', '<=', now())
-            ->get();
+        // Busca investimentos que venceram o prazo OU já atingiram 100% do lucro (se essa for a regra de encerramento antecipado)
+        $investments = Investment::where('status', 'active')->get();
         $count = 0;
-        foreach ($expired as $investment) {
-            try {
-                DB::transaction(function () use ($investment) {
-                    // Atualiza status
-                    $investment->update(['status' => 'completed']);
-                    // Desativa robô associado
-                    if ($investment->botInstance) {
-                        $investment->botInstance->update(['is_active' => false]);
-                    }
-                });
+
+        foreach ($investments as $investment) {
+            $expiredTime = Carbon::parse($investment->expires_at)->isPast();
+            $reachedCap = $investment->total_profit >= $investment->amount;
+
+            if ($expiredTime || $reachedCap) {
+                $investment->update(['status' => 'completed']);
+                if ($investment->botInstance) {
+                    $investment->botInstance->update(['is_active' => false]);
+                }
                 $count++;
-            } catch (\Exception $e) {
-                Log::error('Error finalizing investment', [
-                    'investment_id' => $investment->id,
-                    'error' => $e->getMessage()
-                ]);
             }
         }
         return $count;
